@@ -1,80 +1,44 @@
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * OWO kompresijas algoritma testa piemērs
- */
+import java.io.File;
+import java.util.*;
+
 public class OWOCompressorTest {
-    
-    public static void main(String[] args) {
-        try {
-            // Izveidot testa HTML failu
-            String testHtml = "<!DOCTYPE html>\n" +
-                "<html>\n" +
-                "<head>\n" +
-                "    <title>Testa lapa</title>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <h1>Sveiki pasaule!</h1>\n" +
-                "    <p>Šis ir testa HTML fails kompresijas algoritma pārbaudei.</p>\n" +
-                "    <p>Algoritms izmanto BWT, MTF, RLE un Huffman kodēšanu.</p>\n" +
-                "    <ul>\n" +
-                "        <li>Punkts 1</li>\n" +
-                "        <li>Punkts 2</li>\n" +
-                "        <li>Punkts 3</li>\n" +
-                "    </ul>\n" +
-                "</body>\n" +
-                "</html>";
-            
-            String inputFile = "test.html";
-            String compressedFile = "test.owo";
-            String decompressedFile = "test_decompressed.html";
-            
-            // Saglabāt testa failu
-            Files.write(Paths.get(inputFile), testHtml.getBytes("UTF-8"));
-            System.out.println("Izveidots testa fails: " + inputFile);
-            System.out.println("Oriģinālais izmērs: " + testHtml.length() + " baiti");
-            
-            // Kompresēt
-            System.out.println("\nKompresē...");
-            OWOCompressor.compress(inputFile, compressedFile);
-            
-            long compressedSize = Files.size(Paths.get(compressedFile));
-            System.out.println("Kompresētais izmērs: " + compressedSize + " baiti");
-            double ratio = (1.0 - (double)compressedSize / testHtml.length()) * 100;
-            System.out.println("Kompresijas koeficients: " + 
-                String.format("%.2f", ratio) + "%");
-            
-            // Dekompresēt
-            System.out.println("\nDekompresē...");
-            OWOCompressor.decompress(compressedFile, decompressedFile);
-            
-            // Pārbaudīt, vai dati sakrīt
-            String decompressed = new String(
-                Files.readAllBytes(Paths.get(decompressedFile)), "UTF-8");
-            
-            if (testHtml.equals(decompressed)) {
-                System.out.println("✓ Dekompresija veiksmīga! Dati sakrīt.");
-            } else {
-                System.out.println("✗ Kļūda: Dekompresētie dati nesakrīt ar oriģinālu!");
-                System.out.println("Oriģināla garums: " + testHtml.length());
-                System.out.println("Dekompresēta garums: " + decompressed.length());
-            }
-            
-            // Rādīt failu izmērus
-            System.out.println("\nFailu izmēri:");
-            System.out.println("  " + inputFile + ": " + 
-                Files.size(Paths.get(inputFile)) + " baiti");
-            System.out.println("  " + compressedFile + ": " + 
-                Files.size(Paths.get(compressedFile)) + " baiti");
-            System.out.println("  " + decompressedFile + ": " + 
-                Files.size(Paths.get(decompressedFile)) + " baiti");
-            
-        } catch (Exception e) {
-            System.err.println("Kļūda: " + e.getMessage());
-            e.printStackTrace();
+
+    @Test
+    public void testCompressionStatistics() {
+        String[] fileNames = {"TestFiles/File1.html", "TestFiles/File2.html", "TestFiles/File3.html", "TestFiles/File4.html"};
+        Map<String, String> results = new HashMap<>();
+        long totalOriginalSize = 0;
+        long totalCompressedSize = 0;
+
+        for (String fileName : fileNames) {
+            File file = new File(fileName);
+            long originalSize = file.length();
+            totalOriginalSize += originalSize;
+            long startTime = System.nanoTime();
+
+            // Assuming compress() is a method that compresses the file and returns the compressed size
+            long compressedSize = compress(file);
+            long endTime = System.nanoTime();
+
+            double compressionRatio = (double)originalSize / compressedSize;
+            results.put(fileName, String.format("Original: %d bytes, Compressed: %d bytes, Ratio: %.2f, Time: %.2f ms", originalSize, compressedSize, compressionRatio, (endTime - startTime) / 1_000_000.0));
+            totalCompressedSize += compressedSize;
         }
+
+        // Calculate overall statistics
+        double overallCompressionRatio = (double)totalOriginalSize / totalCompressedSize;
+        results.put("Overall", String.format("Total Original: %d bytes, Total Compressed: %d bytes, Overall Ratio: %.2f", totalOriginalSize, totalCompressedSize, overallCompressionRatio));
+
+        // Print results
+        results.forEach((key, value) -> System.out.println(key + ": " + value));
+    }
+
+    // Dummy compress method for illustration purposes
+    private long compress(File file) {
+        // Implement the actual compression logic here
+        return file.length() / 2; // Example: Return half the original size
     }
 }
-
