@@ -10,17 +10,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'   # or 17, 11, etc.
+          java-version: "21"   # Change to 11/17/etc if needed
 
       - name: Compile Java files
         run: javac $(find . -name "*.java")
 
-      # CHANGE MainClass to your actual main class
+      # TODO: Change MainClass to your actual main class name
       - name: Run program
-        run: java MainClass
+        run: java OWOCompressorTest
